@@ -1,5 +1,3 @@
-#Battleship OOP Implementation
-#David Jones
 from string import ascii_uppercase as ASCII_UPPERCASE
 from itertools import chain
 from random import choice
@@ -17,24 +15,18 @@ class Submarine(AbstractShip):
     SIZE = 3
     NAME = 'Submarine'
     """Child class of ship with 3 placement positions"""
-    def __init__(self, positions):
-        super(Submarine, self).__init__(positions)
 
 
 class AircraftCarrier(AbstractShip):
     SIZE = 5
     NAME = 'Aircraft Carrier'
     """Child class of ship with 5 placement positions"""
-    def __init__(self, positions):
-        super(AircraftCarrier, self).__init__(positions)
 
-        
+
 class PatrolShip(AbstractShip):
     SIZE = 2
     NAME = 'Patrol Ship'
     """Child class of ship with 2 placement positions"""
-    def __init__(self, positions):
-        super(PatrolShip, self).__init__(positions)
 
 
 class Board(object):
@@ -51,36 +43,36 @@ class Board(object):
             positions[i-1].append(let+str(i))
     ALL_POSITIONS = list(chain(*positions))
     
-    shot_positions = []
-    
     def __init__(self):
         self.ships = []
-            
+        self.shot_positions = []
+        self.comp_attack = None
+        
     def __str__(self):
-        board = [['.']*10 for i in range(10)]
+        board_list = [['.']*10 for i in range(10)]
         
         if self.comp_attack:
             for ship in self.ships:
                 for pos in ship.positions:
                     index = self.board_position_conversion(pos)
                     char = 'S'
-                    board[index[0]][index[1]] = char
+                    board_list[index[0]][index[1]] = char
                     
-        for pos in Board.shot_positions:
+        for pos in self.shot_positions:
             index = self.board_position_conversion(pos)
             char = 'O'
             for ship in self.ships:
                 if pos in ship.positions:
                     char = 'X'
-            board[index[0]][index[1]] = char
+            board_list[index[0]][index[1]] = char
             
-            
-        print Board.COL_LABEL
-        for index, i in enumerate(board):
-            print '   ' + '-' * 41
-            print '{:' '<2d} | {} |'.format(index+1, ' | '.join(i))
-        print '   ' + '-' * 41
-        return ''
+        message = Board.COL_LABEL + '\n' 
+        for index, i in enumerate(board_list):
+            message += '   ' + '-' * 41 + '\n'
+            message += '{:' '<2d} | {} |'.format(index+1, ' | '.join(i)) + '\n'
+        message += '   ' + '-' * 41
+
+        return message
         
     def get_positions_for_ship(self, start_position, direc, length):
         if start_position not in Board.ALL_POSITIONS:
@@ -103,7 +95,7 @@ class Board(object):
         return positions, 0
         
     def shoot(self, shot_pos):
-        Board.shot_positions.append(shot_pos)
+        self.shot_positions.append(shot_pos)
         for ship in self.ships:
             if shot_pos in ship.positions:
                 return 1, ship
@@ -131,7 +123,6 @@ BAD_PLACEMENT_MESSAGE = '''
 You've entered an invalid position. Please check to 
 make sure that it your ship is completely on the board
 and that no ships are overlapping!
-
 Remember that the position you give is the top if
 you want vertical, or the left if you want horizontal.'''
                 
@@ -144,9 +135,9 @@ def computer_attack():
         print board
         unacceptable_answer = True
         while unacceptable_answer:
-            print 'where would you like to place {}\n'.format(ship_name)
+            print 'Where would you like to place {}\n'.format(ship_name)
             user_position = raw_input('-> ').upper()
-            print 'What direction would like it to face?\nEnter 1 for vertical or 2 for horizontal'
+            print 'What direction would like it to face?\nEnter 1 for vertical or 2 for horizontal.'
             user_direction = raw_input('-> ')
             if user_position in board.ALL_POSITIONS and user_direction == '1' \
                                                     or user_direction == '2':
@@ -171,10 +162,10 @@ def computer_attack():
         print board
         shot = choice([pos for pos in board.ALL_POSITIONS if pos not in board.shot_positions])
         shot_return, shot_return_ship = board.shoot(shot)
-        print 'Computer shoots {}!\n\n'.format(shot)
+        print 'Computer shoots {}!'.format(shot)
         #ask user about hit
         while True:
-            print 'Was it a hit? \n Yes or No?'
+            print 'Was it a hit?\nYes or No?'
             response = raw_input('-> ')
             if response.lower() == 'yes':
                 if shot_return:
@@ -223,7 +214,7 @@ def player_attack():
         print board
         print 'Where would you like to attack?\n'
         user_attack = raw_input('-> ').upper()
-        if user_attack in Board.ALL_POSITIONS and user_attack not in Board.shot_positions:
+        if user_attack in Board.ALL_POSITIONS and user_attack not in board.shot_positions:
             shot_return, shot_return_ship = board.shoot(user_attack)
             if shot_return:
                 print 'Hit!'
