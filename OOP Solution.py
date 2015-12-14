@@ -4,11 +4,11 @@ from string import ascii_uppercase as ASCII_UPPERCASE
 from itertools import chain
 from random import choice
 
-bad_placement_message = '\
+bad_placement_message = '''
 You\'ve entered an invalid position. Please check to \
 make sure that it your ship is completely on the board and that \
 no ships are overlapping!\nRemember that the position you give is the top \
-if you want vertical, or the left if you want horizontal.'
+if you want vertical, or the left if you want horizontal.'''
 
 class AbstractShip(object):
     """Parent class of all ships."""
