@@ -4,13 +4,11 @@ from string import ascii_uppercase as ASCII_UPPERCASE
 from itertools import chain
 from random import choice
 
-bad_placement_message = '''
-You've entered an invalid position. Please check to 
-make sure that it your ship is completely on the board
-and that no ships are overlapping!
-
-Remember that the position you give is the top if
-you want vertical, or the left if you want horizontal.'''
+bad_placement_message = '\
+You\'ve entered an invalid position. Please check to \
+make sure that it your ship is completely on the board and that \
+no ships are overlapping!\nRemember that the position you give is the top \
+if you want vertical, or the left if you want horizontal.'
 
 class AbstractShip(object):
     """Parent class of all ships."""
@@ -37,7 +35,7 @@ class AircraftCarrier(AbstractShip):
         super(AircraftCarrier, self).__init__(positions)
         self.hit_positions = []
 
-
+        
 class PatrolShip(AbstractShip):
     SIZE = 2
     NAME = 'Patrol Ship'
@@ -51,21 +49,21 @@ class Board(object):
     COLS_MAP = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 
                 'E': 4, 'F': 5, 'G':6, 'H': 7, 'I': 8, 'J': 9
                 }  
-
+    
     COL_LABEL = '     ' + '   '.join(ASCII_UPPERCASE[:10])
-
+    
     positions = []
     for i in range(1,11):
         positions.append([])
         for let in COLS_MAP.keys():
             positions[i-1].append(let+str(i))
     ALL_POSITIONS = list(chain(*positions))
-
+    
     shot_positions = []
-
+    
     def __init__(self):
         self.ships = []
-
+            
     def __str__(self):
         board = [['.']*10 for i in range(10)]
         for ship in self.ships:
@@ -81,49 +79,50 @@ class Board(object):
                 else:
                     char = 'O'
             board[index[0]][index[1]] = char
-
+            
+            
         print Board.COL_LABEL
         for index, i in enumerate(board):
             print '   ' + '-' * 41
             print '{:' '<2d} | {} |'.format(index+1, ' | '.join(i))
         print '   ' + '-' * 41
         return ''
-
+        
     def get_positions_for_ship(self, start_position, direc, length):
         if start_position not in Board.ALL_POSITIONS:
             print 'start position not in valid positions'
             return None, -1
-
+        
         col = start_position[0]
         row = int(start_position[1:]) 
-
+        
         if direc == '2':
             positions = [chr(ord(col)+i) + str(row) for i in range(length)]
         else:
             positions = [col + str(row+i) for i in range(length)]
-
+        
         print 'Generated positions for ship: {}'.format(positions)
         for pos in positions:
             if pos not in Board.ALL_POSITIONS:
                 return None, 1
         
         return positions, 0
-
+        
     def shoot(self, shot_pos):
         Board.shot_positions.append(shot_pos)
         for ship in self.ships:
             if shot_pos in ship.positions:
                 print 'HIT {}'.format(ship.NAME)
-                return 1, ship.NAME
+                return 1, ship
         else:
             print 'MISS'
             return 0, None
-
+                
     def is_ship_sunk(self):
         for ship in self.ships:
             if len(ship.hit_positions) == ship.SIZE and ship.sunk == False:
                 ship.sunk = True
-                return 1, ship.NAME
+                return 1, ship
         return 0, None
 
     def board_position_conversion(self, position):
@@ -131,7 +130,7 @@ class Board(object):
         row = int(position[1:]) - 1
         return row, col
 
-
+                
 def main():
     board = Board()
     ships = []
@@ -162,6 +161,8 @@ def main():
                         board.ships.append(ship_names[ship_name](return_positions))
                         break
             print bad_placement_message
+          
+            
 
     # main game loop
     while True:
@@ -174,13 +175,14 @@ def main():
             response = raw_input('')
             if response.lower() == 'yes':
                 if shot_return:
-                    ship_names[shot_return_ship].hit_positions.append(shot)
+                    shot_return_ship.hit_positions.append(shot)
+                    print shot_return_ship.hit_positions #DEBUG
                     sunk_check_value, sunk_check_ship = board.is_ship_sunk()
                     if sunk_check_value == 1:
-                        print 'Right! The computer sunk your {}!'.format(sunk_check_ship)
+                        print 'Right! The computer sunk your {}!'.format(sunk_check_ship.NAME)
                         break
                     else:
-                        print 'Right! The computer hit your {}!'.format(shot_return_ship)
+                        print 'Right! The computer hit your {}!'.format(shot_return_ship.NAME)
                         break
                 else:
                     print 'Are you sure?\n'
@@ -190,10 +192,10 @@ def main():
                     break
                 else:
                     print 'Are you sure?\n'
-
-        #Game over Check
+                    
         if all(ship.sunk == True for ship in board.ships):
             print 'Game Over! Lets be honest though, it was inevitable. Sorry.'
             break
-
+    
 main()
+        
