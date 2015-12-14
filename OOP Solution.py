@@ -4,20 +4,13 @@ from string import ascii_uppercase as ASCII_UPPERCASE
 from itertools import chain
 from random import choice
 
-bad_placement_message = ''''
-You've entered an invalid position. Please check to 
-make sure that it your ship is completely on the board
-and that no ships are overlapping!
-
-Remember that the position you give is the top if
-you want vertical, or the left if you want horizontal.'''
 
 class AbstractShip(object):
     """Parent class of all ships."""
-    def __init__(self, positions, hit_positions = []):
+    def __init__(self, positions):
         self.sunk = False
         self.positions = positions
-        self.hit_positions = hit_positions
+        self.hit_positions = []
 
 
 class Submarine(AbstractShip):
@@ -26,7 +19,6 @@ class Submarine(AbstractShip):
     """Child class of ship with 3 placement positions"""
     def __init__(self, positions):
         super(Submarine, self).__init__(positions)
-        self.hit_positions = []
 
 
 class AircraftCarrier(AbstractShip):
@@ -35,7 +27,6 @@ class AircraftCarrier(AbstractShip):
     """Child class of ship with 5 placement positions"""
     def __init__(self, positions):
         super(AircraftCarrier, self).__init__(positions)
-        self.hit_positions = []
 
         
 class PatrolShip(AbstractShip):
@@ -44,7 +35,6 @@ class PatrolShip(AbstractShip):
     """Child class of ship with 2 placement positions"""
     def __init__(self, positions):
         super(PatrolShip, self).__init__(positions)
-        self.hit_positions = []
 
 
 class Board(object):
@@ -68,18 +58,20 @@ class Board(object):
             
     def __str__(self):
         board = [['.']*10 for i in range(10)]
-        for ship in self.ships:
-            for pos in ship.positions:
-                index = self.board_position_conversion(pos)
-                char = 'S'
-                board[index[0]][index[1]] = char
+        
+        if self.comp_attack:
+            for ship in self.ships:
+                for pos in ship.positions:
+                    index = self.board_position_conversion(pos)
+                    char = 'S'
+                    board[index[0]][index[1]] = char
+                    
         for pos in Board.shot_positions:
             index = self.board_position_conversion(pos)
+            char = 'O'
             for ship in self.ships:
                 if pos in ship.positions:
                     char = 'X'
-                else:
-                    char = 'O'
             board[index[0]][index[1]] = char
             
             
@@ -114,10 +106,8 @@ class Board(object):
         Board.shot_positions.append(shot_pos)
         for ship in self.ships:
             if shot_pos in ship.positions:
-                print 'HIT {}'.format(ship.NAME)
                 return 1, ship
         else:
-            print 'MISS'
             return 0, None
                 
     def is_ship_sunk(self):
@@ -132,16 +122,28 @@ class Board(object):
         row = int(position[1:]) - 1
         return row, col
 
+SHIP_NAMES = {  PatrolShip.NAME : PatrolShip,
+                Submarine.NAME : Submarine,
+                AircraftCarrier.NAME : AircraftCarrier
+                }        
+
+BAD_PLACEMENT_MESSAGE = '''
+You've entered an invalid position. Please check to 
+make sure that it your ship is completely on the board
+and that no ships are overlapping!
+
+Remember that the position you give is the top if
+you want vertical, or the left if you want horizontal.'''
                 
-def main():
+def computer_attack():
     board = Board()
-    ships = []
-    ship_names = {  PatrolShip.NAME : PatrolShip,
-                    Submarine.NAME : Submarine,
-                    AircraftCarrier.NAME : AircraftCarrier}
-    for ship_name in ship_names.keys():
+    board.comp_attack = True
+    
+    #settup loop for each ship
+    for ship_name in SHIP_NAMES.keys():
         print board
-        while True:
+        unacceptable_answer = True
+        while unacceptable_answer:
             print 'where would you like to place {}\n'.format(ship_name)
             user_position = raw_input('-> ').upper()
             print 'What direction would like it to face?\nEnter 1 for vertical or 2 for horizontal'
@@ -152,33 +154,31 @@ def main():
                                                 board.get_positions_for_ship(
                                                     user_position, 
                                                     user_direction, 
-                                                    ship_names[ship_name].SIZE)
+                                                    SHIP_NAMES[ship_name].SIZE)
                 if return_value == 0:
-                    if ships:
-                        for ship in ships:
+                    if board.ships:
+                        for ship in board.ships:
                             if all(position not in ship.positions for position in return_positions):
-                                board.ships.append(ship_names[ship_name](return_positions))
-                                break
+                                board.ships.append(SHIP_NAMES[ship_name](return_positions))
+                                unacceptable_answer = False
                     else:
-                        board.ships.append(ship_names[ship_name](return_positions))
-                        break
-            print bad_placement_message
-          
-            
+                        board.ships.append(SHIP_NAMES[ship_name](return_positions))
+                        unacceptable_answer = False
+            print BAD_PLACEMENT_MESSAGE
 
-    # main game loop
+    #main play - computer sends consecutive attacks and player is asked if hit      
     while True:
         print board
         shot = choice([pos for pos in board.ALL_POSITIONS if pos not in board.shot_positions])
         shot_return, shot_return_ship = board.shoot(shot)
         print 'Computer shoots {}!\n\n'.format(shot)
+        #ask user about hit
         while True:
-            print 'Was it a hit? \n Yes or No? -> '
-            response = raw_input('')
+            print 'Was it a hit? \n Yes or No?'
+            response = raw_input('-> ')
             if response.lower() == 'yes':
                 if shot_return:
                     shot_return_ship.hit_positions.append(shot)
-                    print shot_return_ship.hit_positions #DEBUG
                     sunk_check_value, sunk_check_ship = board.is_ship_sunk()
                     if sunk_check_value == 1:
                         print 'Right! The computer sunk your {}!'.format(sunk_check_ship.NAME)
@@ -195,10 +195,72 @@ def main():
                 else:
                     print 'Are you sure?\n'
                     
+        #End turn, check gameover status
         if all(ship.sunk == True for ship in board.ships):
             print board
             print 'Game Over! Lets be honest though, it was inevitable. Sorry.'
             break
+        for ship in board.ships:
+            print ship.NAME, ship.positions, ship.hit_positions, ship.sunk
     
-main()
+    return None
+    
+def player_attack():
+    board = Board()
+    board.comp_attack = False
+    #set computer positions
+    for Ship in SHIP_NAMES.values():
+        while True:
+            placement = choice(Board.ALL_POSITIONS)
+            hor_or_vert = choice(['1','2'])
+            pos, value = board.get_positions_for_ship(placement, hor_or_vert, Ship.SIZE)
+            if value == 0:
+                board.ships.append(Ship(pos))
+                break
+    print 'Computer is Ready!'
+    
+    while any(ship.sunk == False for ship in board.ships):
+        print board
+        print 'Where would you like to attack?\n'
+        user_attack = raw_input('-> ').upper()
+        if user_attack in Board.ALL_POSITIONS and user_attack not in Board.shot_positions:
+            shot_return, shot_return_ship = board.shoot(user_attack)
+            if shot_return:
+                print 'Hit!'
+                shot_return_ship.hit_positions.append(user_attack)
+                sunk_check_value, sunk_check_ship = board.is_ship_sunk()
+                if sunk_check_value:
+                    print 'You\'ve sunk the {}!'.format(sunk_check_ship.NAME)
+            else:
+                print 'Miss!'
+        else:
+            print 'You\'ve either entered and invalid position or you\'ve \
+already shot there!'
+
+    print 'Game over! You sunk all of the ships!'
+    return None
         
+    
+def main():
+    print 'Welcome to Battleship!\n\nEnter 1 to defend against the computer, or \
+enter 2 to attack the computer!\n\n'
+    while True:
+        gamemode = raw_input('-> ')
+        if gamemode == '1':
+            computer_attack()
+            break
+        elif gamemode == '2':
+            player_attack()
+            break
+        else:
+            print 'You suck! Enter 1 or 2!'
+    
+    print '\n\nPlay again? (Yes or No)\n'
+    response = raw_input('-> ')
+    if response.lower() == 'yes':
+        main()
+    
+    print 'Thanks for playing!'
+    
+if __name__ == '__main__':
+    main()
