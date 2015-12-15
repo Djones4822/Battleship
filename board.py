@@ -1,5 +1,4 @@
 from ships import AbstractShip, Submarine, PatrolShip, AircraftCarrier
-from board import Board
 from random import choice
 from string import ascii_uppercase as ASCII_UPPERCASE
 from computer_attack import computer_attack
