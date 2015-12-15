@@ -57,11 +57,11 @@ class Board(object):
                     char = 'X'
             board_list[index[0]][index[1]] = char
             
-        message = Board.COL_LABEL + '\n' 
+        message = '\n' + Board.COL_LABEL + '\n' 
         for index, i in enumerate(board_list):
             message += '   ' + '-' * 41 + '\n'
             message += '{:' '<2d} | {} |'.format(index+1, ' | '.join(i)) + '\n'
-        message += '   ' + '-' * 41
+        message += '   ' + '-' * 41 + '\n'
 
         return message
         
@@ -78,7 +78,7 @@ class Board(object):
         else:
             positions = [col + str(row+i) for i in range(length)]
         
-        print 'Generated positions for ship: {}'.format(positions)
+        print '[DEBUGGING] Generated positions for ship: {}'.format(positions)
         for pos in positions:
             if pos not in Board.ALL_POSITIONS:
                 return None, 1
@@ -116,8 +116,8 @@ You've entered an invalid position. Please check to
 make sure that it your ship is completely on the board
 and that no ships are overlapping!
 
-Remember that the position you give is the top if
-you want vertical, or the left if you want horizontal.
+Remember that the position you give is the top (if
+you want vertical) or the left (if you want horizontal).
 '''
                 
 def computer_attack():
@@ -207,7 +207,7 @@ def player_attack():
             if value == 0:
                 board.ships.append(Ship(pos))
                 break
-    print 'Computer is Ready!'
+    print '\nComputer is Ready!'
     
     while any(ship.sunk == False for ship in board.ships):
         print board
