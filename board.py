@@ -1,3 +1,10 @@
+from ships import AbstractShip, Submarine, PatrolShip, AircraftCarrier
+from board import Board
+from random import choice
+from string import ascii_uppercase as ASCII_UPPERCASE
+from computer_attack import computer_attack
+from player_attack import player_attack
+
 class Board(object):
     
     COLS_MAP = {ASCII_UPPERCASE[i] : i for i in range(10)}
