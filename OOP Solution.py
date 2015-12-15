@@ -1,5 +1,4 @@
 from string import ascii_uppercase as ASCII_UPPERCASE
-from itertools import chain
 from random import choice
 
 
@@ -30,18 +29,10 @@ class PatrolShip(AbstractShip):
 
 
 class Board(object):
-    COLS_MAP = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 
-                'E': 4, 'F': 5, 'G':6, 'H': 7, 'I': 8, 'J': 9
-                }  
-    
-    COL_LABEL = '     ' + '   '.join(ASCII_UPPERCASE[:10])
-    
-    positions = []
-    for i in range(1,11):
-        positions.append([])
-        for let in COLS_MAP.keys():
-            positions[i-1].append(let+str(i))
-    ALL_POSITIONS = list(chain(*positions))
+
+    COLS_MAP = {ASCII_UPPERCASE[i] : i for i in range(10)}
+    COL_LABEL = '     ' + '   '.join(sorted(COLS_MAP.keys()))
+    ALL_POSITIONS = [let + str(i) for let in COLS_MAP.keys() for i in range(1,11)]
     
     def __init__(self):
         self.ships = []
@@ -92,6 +83,7 @@ class Board(object):
             if pos not in Board.ALL_POSITIONS:
                 return None, 1
         
+        
         return positions, 0
         
     def shoot(self, shot_pos):
@@ -123,8 +115,10 @@ BAD_PLACEMENT_MESSAGE = '''
 You've entered an invalid position. Please check to 
 make sure that it your ship is completely on the board
 and that no ships are overlapping!
+
 Remember that the position you give is the top if
-you want vertical, or the left if you want horizontal.'''
+you want vertical, or the left if you want horizontal.
+'''
                 
 def computer_attack():
     board = Board()
@@ -152,10 +146,13 @@ def computer_attack():
                             if all(position not in ship.positions for position in return_positions):
                                 board.ships.append(SHIP_NAMES[ship_name](return_positions))
                                 unacceptable_answer = False
+                            else: 
+                                print BAD_PLACEMENT_MESSAGE
                     else:
                         board.ships.append(SHIP_NAMES[ship_name](return_positions))
                         unacceptable_answer = False
-            print BAD_PLACEMENT_MESSAGE
+                else:
+                   print BAD_PLACEMENT_MESSAGE
 
     #main play - computer sends consecutive attacks and player is asked if hit      
     while True:
@@ -191,6 +188,8 @@ def computer_attack():
             print board
             print 'Game Over! Lets be honest though, it was inevitable. Sorry.'
             break
+        
+        #DEBUGGING
         for ship in board.ships:
             print ship.NAME, ship.positions, ship.hit_positions, ship.sunk
     
