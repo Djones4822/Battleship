@@ -198,6 +198,7 @@ def computer_attack():
         except ValueError:
             pass
     comp_tries = response
+    comp_start_tries = response
     
     
     #settup loop for each ship
@@ -288,7 +289,7 @@ def computer_attack():
         
         if not comp_tries:
             print 'You win!'
-            if board.smart_attack_on and response >= 20:
+            if board.smart_attack_on and comp_start_tries >= 45:
                 print 'You\'re smarter than our best computer! Good job! You should probably work for the government or something, I donno. What am I, a scientist?\n'
     return None
     
