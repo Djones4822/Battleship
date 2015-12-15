@@ -75,7 +75,7 @@ class Board(object):
         col = start_position[0]
         row = int(start_position[1:]) 
         
-        if direc == '2':
+        if direc == '1':
             positions = [chr(ord(col)+i) + str(row) for i in range(length)]
         else:
             positions = [col + str(row+i) for i in range(length)]
@@ -106,7 +106,7 @@ class Board(object):
     def board_position_conversion(self, position):
         col = Board.COLS_MAP[position[0]]
         row = int(position[1:]) - 1
-        return row, col
+        return col, row
         
     def smart_attack(self):
         if self.smart_attack_on:
@@ -212,8 +212,8 @@ def computer_attack():
             user_position = raw_input('-> ').upper()
             print 'What direction would like it to face?\nEnter 1 for vertical or 2 for horizontal.'
             user_direction = raw_input('-> ')
-            if user_position in board.ALL_POSITIONS and user_direction == '1' \
-                                                    or user_direction == '2':
+            if user_position in board.ALL_POSITIONS and (user_direction == '1' \
+                                                    or user_direction == '2'):
                 return_positions, return_value = \
                                                 board.get_positions_for_ship(
                                                     user_position, 
