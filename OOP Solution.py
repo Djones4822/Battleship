@@ -32,7 +32,7 @@ class PatrolShip(AbstractShip):
 class Board(object):
     
     COLS_MAP = {ASCII_UPPERCASE[i] : i for i in range(10)}
-    COL_LABEL = '     ' + '   '.join(sorted(COLS_MAP.keys()))
+    COL_LABEL = '    ' + '   '.join([str(i) for i in range(1,11)])
     ALL_POSITIONS = [let + str(i) for let in COLS_MAP.keys() for i in range(1,11)]
     
     def __init__(self):
@@ -61,9 +61,9 @@ class Board(object):
             
         message = '\n' + Board.COL_LABEL + '\n' 
         for index, i in enumerate(board_list):
-            message += '   ' + '-' * 41 + '\n'
-            message += '{:' '<2d} | {} |'.format(index+1, ' | '.join(i)) + '\n'
-        message += '   ' + '-' * 41 + '\n'
+            message += '  ' + '-' * 41 + '\n'
+            message += '{} | {} |'.format(ASCII_UPPERCASE[index], ' | '.join(i)) + '\n'
+        message += '  ' + '-' * 41 + '\n'
 
         return message
         
@@ -198,7 +198,6 @@ def computer_attack():
         except ValueError:
             pass
     comp_tries = response
-    comp_start_tries = response
     
     
     #settup loop for each ship
@@ -289,7 +288,7 @@ def computer_attack():
         
         if not comp_tries:
             print 'You win!'
-            if board.smart_attack_on and comp_start_tries >= 45:
+            if board.smart_attack_on and response >= 20:
                 print 'You\'re smarter than our best computer! Good job! You should probably work for the government or something, I donno. What am I, a scientist?\n'
     return None
     
@@ -354,6 +353,4 @@ enter 2 to attack the computer!\n\n'
     print 'Thanks for playing!'
     
 if __name__ == '__main__':
-    main()
-else:
     main()
