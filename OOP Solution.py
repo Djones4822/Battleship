@@ -147,13 +147,10 @@ SHIP_NAMES = {  Submarine.NAME : Submarine,
                 }
 
 BAD_PLACEMENT_MESSAGE = '''
-You've entered an invalid position. Please check to 
-make sure that it your ship is completely on the board
-and that no ships are overlapping!
-
-Remember that the position you give is the top (if
-you want vertical) or the left (if you want horizontal).
-'''
+Your ship is too big for those spaces. Remember that\
+if you want a vertical ship, then the position you give is \
+the top position. If you wankt a horizontal ship then the \
+position is the left most.'''
                 
 def computer_attack():
     board = Board()
@@ -182,8 +179,8 @@ def computer_attack():
     #settup loop for each ship
     for ship_name in SHIP_NAMES.keys():
         print board
-        unacceptable_answer = True
-        while unacceptable_answer:
+        acceptable_answer = False
+        while not acceptable_answer:
             print 'Where would you like to place {}\n'.format(ship_name)
             user_position = raw_input('-> ').upper()
             print 'What direction would like it to face?\nEnter 1 for vertical or 2 for horizontal.'
@@ -198,16 +195,19 @@ def computer_attack():
                 if return_value == 0:
                     if board.ships:
                         for ship in board.ships:
-                            if all(position not in ship.positions for position in return_positions):
+                            if all((position not in ship.positions) for position in return_positions):
                                 board.ships.append(SHIP_NAMES[ship_name](return_positions))
-                                unacceptable_answer = False
-                            else: 
-                                print BAD_PLACEMENT_MESSAGE
+                                acceptable_answer = True
+                        if not acceptable_answer: 
+                            print 'Your ships are overlapping!'
                     else:
                         board.ships.append(SHIP_NAMES[ship_name](return_positions))
-                        unacceptable_answer = False
-                else:
-                   print BAD_PLACEMENT_MESSAGE
+                        acceptable_answer = True
+                        
+                elif return_value == 1:
+                    print BAD_PLACEMENT_MESSAGE
+            else:
+                    print 'You entered an invalid starting position.'
 
     #main play - computer sends consecutive attacks and player is asked if hit      
     while comp_tries:
