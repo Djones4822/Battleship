@@ -39,6 +39,7 @@ class Board(object):
         self.ships = []
         self.shot_positions = []
         self.comp_attack = None
+        self.last_miss = True
         
     def __str__(self):
         board_list = [['.']*10 for i in range(10)]
@@ -129,17 +130,34 @@ class Board(object):
                         print ('DEBUGGING: Chosen shot: {} \nDEBUGGING: remaining guesses: {}'.format(shot, ship.guess_shot))
                         return shot
                     else:
-                        knowns = ship.hit_positions[-2:]
-                        known1, known2 = knowns[0], knowns[1]
-                        k1_col, k1_row = ord(known1[0]), int(known1[1:])
-                        k2_col, k2_row = ord(known2[0]), int(known2[1:])
-                        slope = (k2_col - k1_col, k2_row - k1_row)
-                        index = (k2_col + slope[0], k2_row + slope[1])
-                        shot = chr(index[0]) + str(index[1])
-                        print ('DEBUGGING: slope: {}\tknown1: {}\tknown2: {}\tshot: {}'.format(slope, known1, known2, shot))
-                        return shot
-        return choice([pos for pos in self.ALL_POSITIONS if pos not in self.shot_positions])
+                        if not self.last_miss:
+                            knowns = ship.hit_positions[-2:]
+                            known1, known2 = knowns[0], knowns[1]
+                            k1_col, k1_row = ord(known1[0]), int(known1[1:])
+                            k2_col, k2_row = ord(known2[0]), int(known2[1:])
+                            slope = (k2_col - k1_col, k2_row - k1_row)
+                            index = (k2_col + slope[0], k2_row + slope[1])
+                            shot = chr(index[0]) + str(index[1])
+                            print ('DEBUGGING: slope: {}\tknown1: {}\tknown2: {}\tshot: {}'.format(slope, known1, known2, shot))
+                            if shot not in Board.ALL_POSITIONS:
+                                self.last_miss = True
+                                return self.smart_attack()
+                            return shot
+                        else:
+                            print 'DEBUGGING: Last shot missed, now heading in other direction starting from the first shot'
+                            knowns = ship.hit_positions[0:2]
+                            known1, known2 = knowns[0], knowns[1]
+                            k1_col, k1_row = ord(known1[0]), int(known1[1:])
+                            k2_col, k2_row = ord(known2[0]), int(known2[1:])
+                            slope = (k1_col - k2_col, k1_row - k2_row)
+                            index = (k1_col + slope[0], k1_row + slope[1])
+                            shot = chr(index[0]) + str(index[1])
+                            fixer = ship.hit_positions.pop(0)
+                            ship.hit_positions.append(fixer)
+                            print ('DEBUGGING: slope: {}\tknown1: {}\tknown2: {}\tshot: {}'.format(slope, known1, known2, shot))
+                            return shot
 
+        return choice([pos for pos in self.ALL_POSITIONS if pos not in self.shot_positions])
 
 SHIP_NAMES = {  Submarine.NAME : Submarine,
                 AircraftCarrier.NAME : AircraftCarrier,
@@ -155,6 +173,12 @@ position is the left most.'''
 def computer_attack():
     board = Board()
     board.comp_attack = True
+    
+    #DEBUGGING
+    #board.shot_positions.append('D3')
+    #board.shot_positions.append('C3')
+    #board.last_miss = False
+    #END DEBUGGING
     
     print 'Would you like to play a smart or a dumb computer?\nEnter 1 for Smart or 2 for Dumb\n'
     while True:
@@ -177,6 +201,9 @@ def computer_attack():
     
     
     #settup loop for each ship
+    #DEBUGGING
+    print 'ships: {}'.format(SHIP_NAMES.keys())
+    #END DEBUGGING
     for ship_name in SHIP_NAMES.keys():
         print board
         acceptable_answer = False
@@ -195,11 +222,11 @@ def computer_attack():
                 if return_value == 0:
                     if board.ships:
                         for ship in board.ships:
-                            if all((position not in ship.positions) for position in return_positions):
-                                board.ships.append(SHIP_NAMES[ship_name](return_positions))
-                                acceptable_answer = True
-                        if not acceptable_answer: 
-                            print 'Your ships are overlapping!'
+                            if any((position in ship.positions) for position in return_positions):
+                                print 'Your ships are overlapping!'
+                        else:
+                            board.ships.append(SHIP_NAMES[ship_name](return_positions))
+                            acceptable_answer = True
                     else:
                         board.ships.append(SHIP_NAMES[ship_name](return_positions))
                         acceptable_answer = True
@@ -209,6 +236,13 @@ def computer_attack():
             else:
                     print 'You entered an invalid starting position.'
 
+    #DEBUGGING
+    #for ship in board.ships:
+    #    if ship.NAME == 'Aircraft Carrier':
+    #        ship.hit_positions.append('D3')
+    #        ship.hit_positions.append('C3')
+    #END DEBUGGING
+    
     #main play - computer sends consecutive attacks and player is asked if hit      
     while comp_tries:
         print board
@@ -225,15 +259,18 @@ def computer_attack():
                     sunk_check_value, sunk_check_ship = board.is_ship_sunk()
                     if sunk_check_value == 1:
                         print 'Right! The computer sunk your {}!'.format(sunk_check_ship.NAME)
+                        board.last_miss = True
                         break
                     else:
                         print 'Right! The computer hit your {}!'.format(shot_return_ship.NAME)
+                        board.last_miss = False
                         break
                 else:
                     print 'Are you sure?\n'
             if response.lower() == 'no':
                 if not shot_return:
                     print 'Right! Computer missed!'
+                    board.last_miss = True
                     break
                 else:
                     print 'Are you sure?\n'
@@ -246,7 +283,7 @@ def computer_attack():
         
         #DEBUGGING
         for ship in board.ships:
-            print ship.NAME, ship.positions, ship.hit_positions, ship.sunk
+            print 'DEBUGGING:', ship.NAME, ship.positions, ship.hit_positions, ship.sunk
         comp_tries -= 1
         
         if not comp_tries:
@@ -316,4 +353,6 @@ enter 2 to attack the computer!\n\n'
     print 'Thanks for playing!'
     
 if __name__ == '__main__':
+    main()
+else:
     main()
