@@ -76,7 +76,7 @@ class Board(object):
         col = start_position[0]
         row = int(start_position[1:]) 
         
-        if direc == '2':
+        if direc == '1':
             positions = [chr(ord(col)+i) + str(row) for i in range(length)]
         else:
             positions = [col + str(row+i) for i in range(length)]
@@ -107,7 +107,7 @@ class Board(object):
     def board_position_conversion(self, position):
         col = Board.COLS_MAP[position[0]]
         row = int(position[1:]) - 1
-        return row, col
+        return col, row
         
     def smart_attack(self):
         if self.smart_attack_on:
