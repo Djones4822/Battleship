@@ -1,5 +1,5 @@
 # Battleship Python project for Remotr python class
-Developed by David Jones and Farhan Solo in 2016 as a project for Remotr, tried having fun while early in my learning. 
+Developed by David Jones and Farhan Solo in 2016 as a project for Remotr, tried having fun while early in my learning. Implemented a "Smart Attack" within the Board class that attempts to use some simple logic to figure out the ships locations once a hit has been found. 
 
 
 # [pyp-c2-a1] Battleship game
