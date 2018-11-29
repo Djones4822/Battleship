@@ -1,5 +1,5 @@
 # Battleship Python project for Remotr python class
-Developed by David Jones in 2016 as a project, tried having fun while early in my learning. 
+Developed by David Jones and Farhan Solo in 2016 as a project for Remotr, tried having fun while early in my learning. 
 
 
 # [pyp-c2-a1] Battleship game
