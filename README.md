@@ -1,3 +1,7 @@
+# Battleship Python project for Remotr python class
+Developed by David Jones in 2016 as a project, tried having fun while early in my learning. 
+
+
 # [pyp-c2-a1] Battleship game
 
 Build a battleship game. It has to work in the console. You don’t need any external libraries, you can make it work just using plain python. You’d play against the console. The game will have 2 play modes: attack and defence.
